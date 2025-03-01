@@ -37,5 +37,8 @@ urlpatterns = [
     path("create_announcement/", views.create_announcement),
     path("show_announcements/", views.show_announcements),
     path("check_admin/", views.check_admin),
-    path("show_articles/", views.show_articles)
+    path("show_articles/", views.show_articles),
+    path("create_article/", views.create_article),
+    path("delete_announcement/",views.delete_announcement),
+    path("delete_article/", views.delete_article)
 ]

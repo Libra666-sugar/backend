@@ -236,11 +236,43 @@ def show_articles(request):
 @api_view(["POST"])
 def create_article(request):
     try:
-        data = json.loads(request.body)
+        data = request.data
         titles = data.get("titles")
         content = data.get("content")
         article = Article.objects.create(title=titles, content=content)
-        return Response({"message": "Post created successfully", "id": article.post_id, 'code': 1},
-                             status=status.HTTP_201_CREATED)
+        return Response({"message": "Article  created successfully", "id":  article.id, 'code': 1},
+                             status= status.HTTP_201_CREATED)
     except Exception as e:
         return Response({"message": str(e), 'code': -1}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+def delete_announcement(request):
+    try:
+        data = request.data
+        id = data.get("id")
+        announcement = Announcement.objects.get(id=id)
+        announcement.delete()
+        return Response({"message": "Announcement deleted successfully", 'code': 1}, status=status.HTTP_200_OK)
+
+    except Announcement.DoesNotExist:
+          return Response({"message": "Announcement not found", 'code': -1}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+          return Response({"message": str(e), 'code': -1}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+def delete_article(request):
+    try:
+        pprint.pprint(request.data)
+        data = request.data
+        id = data.get("id")
+        article = Article.objects.get(id=id)
+
+        article.delete()
+        return Response({"message": "Article deleted successfully", 'code': 1}, status=status.HTTP_200_OK)
+
+    except Article.DoesNotExist:
+          return Response({"message": "Article not found", 'code': -1}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+          return Response({"message": str(e), 'code': -1}, status=status.HTTP_400_BAD_REQUEST)
