@@ -1,6 +1,7 @@
 import pprint
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -88,6 +89,33 @@ def create_post(request):
     except Exception as e:
         return Response({"message": str(e), 'code': -1}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(["GET"])
+def show_comments(request):
+    try:
+        post_id = request.query_params.get("id")
+        if not post_id:
+            return Response({"message": "Missing post_id", "code": -1}, status=status.HTTP_400_BAD_REQUEST)
+        # 获取评论数据（包含用户预取提高效率）
+        comments = Text.objects.filter(post_id=post_id) \
+                .select_related('user') \
+                .order_by('-id')
+        comments_data = []
+        for comment in comments:
+            comments_data.append({
+                "id": comment.id,
+
+                "content": comment.content,
+                # 安全处理可能为null的user
+                "username": comment.user.username,
+            })
+        return Response({
+            "data": comments_data,
+            "code": 1
+        }, status=200)
+
+    except Exception as e:
+        return Response({"message": str(e), "code": -1},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["POST"])
 def create_comment(request):
@@ -103,7 +131,6 @@ def create_comment(request):
         return Response({"message": "Post not found", 'code': -1}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"message": str(e), 'code': -1}, status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(["POST"])
 def delete_post(request):
@@ -143,11 +170,11 @@ def favorite_post(request):
 @api_view(["GET"])
 def show_posts(request):
     try:
-        posts = Post.objects.all().values("post_id", "titles", "description")
+        posts = Post.objects.annotate(comment_count=Count('posts_texts')) \
+            .values("post_id", "titles", "description", "comment_count")  # 包含comment_count
         return Response(list(posts), status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"message": str(e), 'code': -1}, status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(["GET"])
 def show_favorited_posts(request):

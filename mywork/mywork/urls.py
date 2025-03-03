@@ -28,6 +28,7 @@ urlpatterns = [
     path("login/", views.user_login),
     path("create_post/", views.create_post),
     path("create_comment/", views.create_comment),
+    path("show_comments/", views.show_comments),
     path("delete_post/", views.delete_post),
     path("favorite_post/", views.favorite_post),
     path("show_posts/", views.show_posts),
